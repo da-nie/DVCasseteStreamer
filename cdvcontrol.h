@@ -31,17 +31,6 @@ class CDVControl
 {
  private:
   #pragma pack(1)
-  //заголовок
-  struct SDVPackerHeader
-  {
-   uint8_t ID[4];//идентификатор DV-B
-   uint16_t HeaderSize;//размер заголовка
-   uint8_t Version;//версия
-   uint64_t Offset;//смещение блока в байтах
-   uint8_t Flag;//флаг конца данных
-   uint8_t FrameSize[3];//три байта размера данных в кадре
-   uint32_t CRC;//контрольная сумма
-  };
   //макроблок
   struct SDVMacroBlock
   {
@@ -62,8 +51,6 @@ class CDVControl
   };
   #pragma pack()
   //-Переменные класса----------------------------------------------------------------------------------
-  static const int32_t DVBACKUP_VERSION=(0x01);//версия программы
-  static const int32_t HEADER_SIZE=(4+2+1+8+1+3+4);//sizeof(SDVPackerHeader);//размер заголовка
   static const int32_t DV_WIDTH=(720/8);//количество блоков коэффициентов по ширине
   static const int32_t DV_PAL_HEIGHT=(576/8);//количество блоков коэффициентов по высоте для режима PAL
   static const int32_t DV_NTSC_HEIGHT=(480/8);//количество блоков коэффициентов по высоте для режима NTSC
@@ -73,6 +60,9 @@ class CDVControl
   static const uint32_t PROGRESS_BAR_COLOR=0xFFFFFF;//цвет линейки прогресса
 
   static const uint32_t DIF_BLOCK_SIZE=80;//размер DIF-Блока
+  static const uint32_t PAL_FRAME_SIZE=144000;//размер кадра PAL
+  static const uint32_t NTSC_FRAME_SIZE=120000;//размер кадра NTSC
+  static const uint32_t MAX_FRAME_SIZE=PAL_FRAME_SIZE;//максимальный размер кадра
 
   int32_t FrameCounter;//текущий кадр
   CDVTime cDVTime_Video;//длительность видео
@@ -92,15 +82,6 @@ public:
   //-Закрытые функции класса----------------------------------------------------------------------------  
   double Round(double value,uint32_t digit);//округление до заданного количества цифр после запятой
   int32_t RoundToInt(double value);//округление до ближайшего целого
-
-  uint32_t CreateCRC(uint32_t last_crc,const uint8_t* ptr,size_t length);//алгоритм вычисления CRC
-  uint16_t ReadShort(uint8_t* src);//преобразовать в short
-  uint32_t ReadLong(uint8_t* src);//преобразовать в long
-  uint64_t ReadLongLong(uint8_t* src);//преобразовать в longlong
-  void WriteShort(uint8_t* dst,uint16_t val);//создать short
-  void WriteLong(uint8_t* dst,uint32_t val);//создать long
-  void WriteLongLong(uint8_t* dst,uint64_t val);//создать long long
-
   void DV_Place411MacroBlock(SDVMacroBlock *sDVMacroBlock_Ptr);//установка 411 макроблока
   void DV_Place420MacroBlock(SDVMacroBlock *sDVMacroBlock_Ptr);//установка 420 макроблока
   void ConvertToYUV(uint8_t* img_rgb,int32_t height,int16_t* img_y,int16_t* img_cr,int16_t* img_cb);//конвертация в палитру YUV
@@ -113,11 +94,6 @@ public:
   int32_t GetChunkSize(bool isPAL);//получить размер фрагмента
   void InsertData(uint8_t* src,bool is_pal,uint8_t* target);//вставить данные
   void ExtractData(uint8_t* src,uint8_t* target);//извлечь данные
-  bool VerifyData(uint8_t* databuffer,uint64_t &next_addr,uint16_t &old_header_size,std::string &backup_title,bool &end_data,std::string &answer,bool &new_file);//проверка данных
-  void WriteExtractedData(uint8_t* databuffer,bool do_recover,IExtractDataStream *iExtractDataStream_Ptr,uint16_t &last_header_size,uint32_t &last_got);//запись извлечённых данных
-  bool VerifyEOF(uint64_t next_addr);//проверка конца данных
-  long GetHeaderSize(const char* backup_title);//получить размер заголовка
-  void BuildHeader(uint8_t* databuffer,uint64_t current_address,uint32_t got,uint32_t header_size,int32_t eof,const char* backup_title);//создать заголовок
 };
 
 #endif

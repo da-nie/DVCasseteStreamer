@@ -72,6 +72,7 @@ class CDVHeader
   void Set(SHeader *sHeader_Ptr,uint8_t dif_sequence,bool is_pal);//задать секцию заголовка
   void OutputToFile(FILE *file,const std::string &prefix,SHeader *sHeader_Ptr);//вывести в файл параметры секции
   static uint32_t GetSectionSize(void);//получить размер секции в байтах
+  bool IsPAL(SHeader *sHeader_Ptr,bool &is_pal);//узнать, является ли заголовок заголовком режима PAL
   //-Закрытые функции класса----------------------------------------------------------------------------
 };
 

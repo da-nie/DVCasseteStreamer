@@ -28,10 +28,11 @@ public:
   virtual void Close(void)=0;//закрыть файл
   virtual bool Write(uint8_t *buffer_ptr,size_t size)=0;//записать данные в файл
   virtual void AddAnswer(const std::string &answer)=0;//добавить к ответу строку
-  virtual bool IsExit(void)=0;//нужно ли завершать обработку
   virtual void GetAnswer(std::string &answer)=0;//получить ответ
+  virtual void GetAndClearAnswer(std::string &answer)=0;//получить ответ и очистить его
   virtual void ClearAnswer(void)=0;//очистить ответ
-  virtual void SetExit(bool state)=0;//задать, требуется ли завершение работы
+  virtual bool IsBreak(void)=0;//нужно ли завершать обработку
+  virtual void SetBreak(bool state)=0;//задать, требуется ли завершение обработки
 };
 
 #endif

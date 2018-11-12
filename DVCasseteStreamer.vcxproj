@@ -78,6 +78,7 @@
     <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cbackup.h" />
     <ClInclude Include="cdatehmscode.h" />
     <ClInclude Include="cdateymdcode.h" />
     <ClInclude Include="cdialog_main.h" />
@@ -105,6 +106,7 @@
     <ClInclude Include="tga.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cbackup.cpp" />
     <ClCompile Include="cdatehmscode.cpp" />
     <ClCompile Include="cdateymdcode.cpp" />
     <ClCompile Include="cdialog_main.cpp" />

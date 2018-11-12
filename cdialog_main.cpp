@@ -8,6 +8,7 @@ BEGIN_MESSAGE_MAP(CDialog_Main,CDialog)
  ON_COMMAND(IDC_BUTTON_MAIN_CLEAR_LOG,OnButton_ClearLog)
  ON_COMMAND(IDC_BUTTON_MAIN_INSERT,OnButton_Insert)
  ON_COMMAND(IDC_BUTTON_MAIN_EXTRACT,OnButton_Extract)
+ ON_COMMAND(IDC_BUTTON_MAIN_BREAK,OnButton_Break)
  ON_WM_TIMER()
 END_MESSAGE_MAP()
 
@@ -89,6 +90,7 @@ afx_msg BOOL CDialog_Main::OnInitDialog(void)
  //настраиваем элементы управления
  ((CEdit*)GetDlgItem(IDC_EDIT_MAIN_PREFIX_FRAME))->SetWindowText("200");
  ((CEdit*)GetDlgItem(IDC_EDIT_MAIN_PREFIX_FRAME))->SetLimitText(10);
+ ((CButton*)GetDlgItem(IDC_BUTTON_MAIN_BREAK))->EnableWindow(FALSE);
  //ставим значок
  //hIcon=LoadIcon(AfxGetResourceHandle(),(LPCTSTR)IDI_ICON_MAIN);
  //SetIcon(hIcon,TRUE); 
@@ -145,6 +147,13 @@ afx_msg void CDialog_Main::OnButton_ClearLog(void)
  ((CListBox*)GetDlgItem(IDC_LIST_MAIN_LOG))->ResetContent();
 }
 //----------------------------------------------------------------------------------------------------
+//прервать обработку
+//----------------------------------------------------------------------------------------------------
+afx_msg void CDialog_Main::OnButton_Break(void)
+{
+ cMain_Ptr->Break();
+}
+//----------------------------------------------------------------------------------------------------
 //событие таймера
 //----------------------------------------------------------------------------------------------------
 afx_msg void CDialog_Main::OnTimer(UINT nIDEvent)
@@ -174,5 +183,19 @@ afx_msg void CDialog_Main::OnTimer(UINT nIDEvent)
   }
   line[line_size]=s;
   line_size++;
- } 
+ }
+ //блокируем кнопки
+ bool state=cMain_Ptr->IsProcessing();
+ if (state==true)
+ {
+  ((CEdit*)GetDlgItem(IDC_BUTTON_MAIN_INSERT))->EnableWindow(FALSE);
+  ((CEdit*)GetDlgItem(IDC_BUTTON_MAIN_EXTRACT))->EnableWindow(FALSE);
+  ((CButton*)GetDlgItem(IDC_BUTTON_MAIN_BREAK))->EnableWindow(TRUE);
+ }
+ else
+ {
+  ((CEdit*)GetDlgItem(IDC_BUTTON_MAIN_INSERT))->EnableWindow(TRUE);
+  ((CEdit*)GetDlgItem(IDC_BUTTON_MAIN_EXTRACT))->EnableWindow(TRUE);
+  ((CButton*)GetDlgItem(IDC_BUTTON_MAIN_BREAK))->EnableWindow(FALSE);
+ }
 }

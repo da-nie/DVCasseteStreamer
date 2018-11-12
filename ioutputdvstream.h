@@ -28,10 +28,11 @@ public:
   virtual bool Create(const std::string &file_name)=0;//создать файл
   virtual void Close(void)=0;//закрыть файл
   virtual void AddAnswer(const std::string &answer)=0;//добавить к ответу строку
-  virtual bool IsExit(void)=0;//нужно ли завершать обработку
   virtual void GetAnswer(std::string &answer)=0;//получить ответ
   virtual void ClearAnswer(void)=0;//очистить ответ
-  virtual void SetExit(bool state)=0;//задать, требуется ли завершение работы
+  virtual void GetAndClearAnswer(std::string &answer)=0;//получить ответ и очистить его
+  virtual bool IsBreak(void)=0;//нужно ли завершать обработку
+  virtual void SetBreak(bool state)=0;//задать, требуется ли завершение обработки
 };
 
 #endif

@@ -13,7 +13,7 @@
 //====================================================================================================
 CExtractDataStreamFileWindows::CExtractDataStreamFileWindows(void)
 { 
- SetExit(false);
+ SetBreak(false);
 }
 //====================================================================================================
 //деструктор класса
@@ -81,16 +81,6 @@ void CExtractDataStreamFileWindows::AddAnswer(const std::string &answer)
  }
 }
 //----------------------------------------------------------------------------------------------------
-//нужно ли завершать обработку
-//----------------------------------------------------------------------------------------------------
-bool CExtractDataStreamFileWindows::IsExit(void)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  return(sProtected.Exit);
- }
-}
-//----------------------------------------------------------------------------------------------------
 //получить ответ
 //----------------------------------------------------------------------------------------------------
 void CExtractDataStreamFileWindows::GetAnswer(std::string &answer)
@@ -98,7 +88,6 @@ void CExtractDataStreamFileWindows::GetAnswer(std::string &answer)
  CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
  {
   answer=sProtected.Answer;
-  sProtected.Answer="";
  }
 }
 //----------------------------------------------------------------------------------------------------
@@ -112,12 +101,33 @@ void CExtractDataStreamFileWindows::ClearAnswer(void)
  }
 }
 //----------------------------------------------------------------------------------------------------
-//задать, требуется ли завершение работы
+//получить ответ и очистить его
 //----------------------------------------------------------------------------------------------------
-void CExtractDataStreamFileWindows::SetExit(bool state)
+void CExtractDataStreamFileWindows::GetAndClearAnswer(std::string &answer)
 {
  CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
  {
-  sProtected.Exit=state;
+  answer=sProtected.Answer;
+  sProtected.Answer="";
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//нужно ли завершать обработку
+//----------------------------------------------------------------------------------------------------
+bool CExtractDataStreamFileWindows::IsBreak(void)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  return(sProtected.Break);
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//задать, требуется ли завершение обработки
+//----------------------------------------------------------------------------------------------------
+void CExtractDataStreamFileWindows::SetBreak(bool state)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  sProtected.Break=state;
  }
 }

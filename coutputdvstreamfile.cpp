@@ -12,7 +12,7 @@
 //====================================================================================================
 COutputDVStreamFile::COutputDVStreamFile(void)
 { 
- SetExit(false);
+ SetBreak(false);
 }
 //====================================================================================================
 //деструктор класса
@@ -65,16 +65,6 @@ void COutputDVStreamFile::AddAnswer(const std::string &answer)
  }
 }
 //----------------------------------------------------------------------------------------------------
-//нужно ли завершать обработку
-//----------------------------------------------------------------------------------------------------
-bool COutputDVStreamFile::IsExit(void)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  return(sProtected.Exit);
- }
-}
-//----------------------------------------------------------------------------------------------------
 //получить ответ
 //----------------------------------------------------------------------------------------------------
 void COutputDVStreamFile::GetAnswer(std::string &answer)
@@ -82,7 +72,6 @@ void COutputDVStreamFile::GetAnswer(std::string &answer)
  CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
  {
   answer=sProtected.Answer;
-  sProtected.Answer="";
  }
 }
 //----------------------------------------------------------------------------------------------------
@@ -96,12 +85,33 @@ void COutputDVStreamFile::ClearAnswer(void)
  }
 }
 //----------------------------------------------------------------------------------------------------
-//задать, требуется ли завершение работы
+//получить ответ и очистить его
 //----------------------------------------------------------------------------------------------------
-void COutputDVStreamFile::SetExit(bool state)
+void COutputDVStreamFile::GetAndClearAnswer(std::string &answer)
 {
  CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
  {
-  sProtected.Exit=state;
+  answer=sProtected.Answer;
+  sProtected.Answer="";
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//нужно ли завершать обработку
+//----------------------------------------------------------------------------------------------------
+bool COutputDVStreamFile::IsBreak(void)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  return(sProtected.Break);
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//задать, требуется ли завершение обработки
+//----------------------------------------------------------------------------------------------------
+void COutputDVStreamFile::SetBreak(bool state)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  sProtected.Break=state;
  }
 }

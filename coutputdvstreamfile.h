@@ -27,7 +27,7 @@ class COutputDVStreamFile:public IOutputDVStream
   struct SProtected
   {
    std::string Answer;//ответ
-   bool Exit;//требуется ли завершение работы
+   bool Break;//требуется ли завершение работы
    CCriticalSection cCriticalSection;//критическая секция для доступа к элементам
   } sProtected;  
 public:
@@ -41,10 +41,11 @@ public:
   void Close(void);//закрыть файл
   bool AddFrame(uint8_t *frame_buffer,size_t size);//сохранить кадр
   void AddAnswer(const std::string &answer);//добавить к ответу строку
-  bool IsExit(void);//нужно ли завершать обработку
   void GetAnswer(std::string &answer);//получить ответ
   void ClearAnswer(void);//очистить ответ
-  void SetExit(bool state);//задать, требуется ли завершение работы
+  void GetAndClearAnswer(std::string &answer);//получить ответ и очистить его
+  bool IsBreak(void);//нужно ли завершать обработку
+  void SetBreak(bool state);//задать, требуется ли завершение обработки
  private:
   //-Закрытые функции класса----------------------------------------------------------------------------  
 };

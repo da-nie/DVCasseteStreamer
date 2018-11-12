@@ -51,13 +51,14 @@ void CThreadMain::Execute(void)
  {
   if (IsExit()==true) return;
   CMain::SMode sMode;
-  cMain_Ptr->GetMode(sMode);  
+  cMain_Ptr->GetAndClearMode(sMode);  
   if (sMode.Mode==CMain::MODE_INSERT_TO_DV)//сборка файлов в dv
   {
+   cMain_Ptr->SetProcessingState(true);
    char c_dir[MAX_PATH];
    GetCurrentDirectory(MAX_PATH,c_dir);
    cDVControl.NewRecord();
-   cOutputDVStreamFile.SetExit(false);
+   cOutputDVStreamFile.SetBreak(false);
    cDVControl.LoadBackgroundImage(sMode.LogoFileName,true);
    cOutputDVStreamFile.Create(sMode.OutputFileName);
    uint32_t prefix=sMode.Prefix;
@@ -65,12 +66,16 @@ void CThreadMain::Execute(void)
    InsertToDV(sMode.Path,"",&cOutputDVStreamFile,&cDVControl,sMode.cDVTime,prefix,sMode.OutputFileName,"",sMode.LogoFileName);
    cOutputDVStreamFile.Close();   
    SetCurrentDirectory(c_dir);
+   cOutputDVStreamFile.AddAnswer("—борка dv-файла завершена.\n");
+   cMain_Ptr->SetProcessingState(false);
   }
   if (sMode.Mode==CMain::MODE_EXTRACT_DV)//извлечение файлов из dv
   {
-   cExtractDataStreamFileWindows.SetExit(false);
+   cMain_Ptr->SetProcessingState(true);
+   cExtractDataStreamFileWindows.SetBreak(false);
    cDVControl.ExtractDV(sMode.InputFileName,sMode.Path,&cExtractDataStreamFileWindows); 
    cExtractDataStreamFileWindows.Close();
+   cMain_Ptr->SetProcessingState(false);
   }
   Sleep(100);
  }
@@ -95,7 +100,7 @@ void CThreadMain::InsertToDV(const std::string &path,const std::string &save_pat
  if (handle==INVALID_HANDLE_VALUE) return;
  while(1)
  {
-  if (iOutputDVStream_Ptr->IsExit()==true) break;
+  if (iOutputDVStream_Ptr->IsBreak()==true) break;
 
   if (wfd.cFileName[0]!='.' && !(wfd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY))//если это файл
   {
@@ -125,7 +130,7 @@ void CThreadMain::InsertToDV(const std::string &path,const std::string &save_pat
  if (handle==INVALID_HANDLE_VALUE) return;
  while(1)
  {
-  if (iOutputDVStream_Ptr->IsExit()==true) break;
+  if (iOutputDVStream_Ptr->IsBreak()==true) break;
 
   if (wfd.cFileName[0]!='.' && (wfd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY))//если это директори€
   {
@@ -157,9 +162,9 @@ void CThreadMain::InsertToDV(const std::string &path,const std::string &save_pat
 void CThreadMain::Start(void)
 {
  Stop();
- cEvent_Exit.ResetEvent();
- cOutputDVStreamFile.SetExit(false);
- cExtractDataStreamFileWindows.SetExit(false);
+ cEvent_Exit.ResetEvent(); 
+ cOutputDVStreamFile.SetBreak(false);
+ cExtractDataStreamFileWindows.SetBreak(false);
  cWinThread_Thread=AfxBeginThread((AFX_THREADPROC)ThreadMain,this);
  cWinThread_Thread->m_bAutoDelete=FALSE;
 }
@@ -171,8 +176,7 @@ void CThreadMain::Stop(void)
  if (cWinThread_Thread!=NULL)
  {
   cEvent_Exit.SetEvent();
-  cOutputDVStreamFile.SetExit(true);
-  cExtractDataStreamFileWindows.SetExit(true);
+  Break();
   WaitForSingleObject(cWinThread_Thread->m_hThread,INFINITE);
   delete(cWinThread_Thread);
   cWinThread_Thread=NULL;    
@@ -183,8 +187,8 @@ void CThreadMain::Stop(void)
 //----------------------------------------------------------------------------------------------------
 void CThreadMain::Break(void)
 { 
- cOutputDVStreamFile.SetExit(true);
- cExtractDataStreamFileWindows.SetExit(true);
+ cOutputDVStreamFile.SetBreak(true);
+ cExtractDataStreamFileWindows.SetBreak(true);
 }
 //----------------------------------------------------------------------------------------------------
 //получить ответ
@@ -192,7 +196,24 @@ void CThreadMain::Break(void)
 void CThreadMain::GetAnswer(std::string &answer)
 { 
  cOutputDVStreamFile.GetAnswer(answer);
- std::string answer_two;
- cExtractDataStreamFileWindows.GetAnswer(answer_two);
- answer+=answer_two;
+ if (answer.length()>0) return;
+ cExtractDataStreamFileWindows.GetAnswer(answer); 
 }
+//----------------------------------------------------------------------------------------------------
+//очистить ответ
+//----------------------------------------------------------------------------------------------------
+void CThreadMain::ClearAnswer(void)
+{
+ cOutputDVStreamFile.ClearAnswer();
+ cExtractDataStreamFileWindows.ClearAnswer();
+}
+//----------------------------------------------------------------------------------------------------
+//получить ответ и очистить его
+//----------------------------------------------------------------------------------------------------
+void CThreadMain::GetAndClearAnswer(std::string &answer)
+{
+ cOutputDVStreamFile.GetAndClearAnswer(answer);
+ if (answer.length()>0) return;
+ cExtractDataStreamFileWindows.GetAndClearAnswer(answer); 
+}
+

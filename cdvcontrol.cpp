@@ -6,6 +6,7 @@
 #include "craiifilein.h"
 #include "craiifileout.h"
 #include "cgraphics.h"
+#include "cbackup.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -69,90 +70,6 @@ int32_t CDVControl::RoundToInt(double value)
 {
  return(static_cast<int32_t>(Round(value,0)));
 }
-//----------------------------------------------------------------------------------------------------
-//алгоритм вычисления CRC
-//----------------------------------------------------------------------------------------------------
-uint32_t CDVControl::CreateCRC(uint32_t last_crc,const uint8_t* ptr,size_t length)
-{
- //используется алгоритм Adler32
- if (ptr==NULL) return(1UL);
- uint32_t sum1=last_crc;
- uint32_t sum2=0;
- sum2=(sum1>>16)&0xffff;
- sum1&=0xffff;
- while(length>0)
- {
-  sum1=(sum1+(*ptr))%65521;
-  sum2=(sum2+sum1)%65521;
-  length--;
-  ptr++;
- }
- return((sum2<<16)+sum1);
-}
-//----------------------------------------------------------------------------------------------------
-//преобразовать в short
-//----------------------------------------------------------------------------------------------------
-uint16_t CDVControl::ReadShort(uint8_t* src)
-{
-return (src[0]<<8)|src[1];
-}
-//----------------------------------------------------------------------------------------------------
-//преобразовать в long
-//----------------------------------------------------------------------------------------------------
-uint32_t CDVControl::ReadLong(uint8_t* src)
-{
-return (src[0]<<24)|(src[1]<<16)|(src[2]<<8)|src[3];
-}
-//----------------------------------------------------------------------------------------------------
-//преобразовать в longlong
-//----------------------------------------------------------------------------------------------------
-uint64_t CDVControl::ReadLongLong(uint8_t* src)
-{
- uint64_t ret=0;
- ret|=((uint64_t)src[0]<<56);
- ret|=((uint64_t)src[1]<<48);
- ret|=((uint64_t)src[2]<<40);
- ret|=((uint64_t)src[3]<<32);
- ret|=((uint64_t)src[4]<<24);
- ret|=((uint64_t)src[5]<<16);
- ret|=((uint64_t)src[6]<<8);
- ret|=((uint64_t)src[7]);
- return(ret);
-}
-
-//----------------------------------------------------------------------------------------------------
-//создать short
-//----------------------------------------------------------------------------------------------------
-void CDVControl::WriteShort(uint8_t* dst,uint16_t val)
-{
- dst[0]=static_cast<uint8_t>(val>>8);
- dst[1]=static_cast<uint8_t>(val);
-}
-//----------------------------------------------------------------------------------------------------
-//создать long
-//----------------------------------------------------------------------------------------------------
-void CDVControl::WriteLong(uint8_t* dst,uint32_t val)
-{
- dst[0]=static_cast<uint8_t>(val>>24);
- dst[1]=static_cast<uint8_t>(val>>16);
- dst[2]=static_cast<uint8_t>(val>>8);
- dst[3]=static_cast<uint8_t>(val);
-}
-//----------------------------------------------------------------------------------------------------
-//создать long long
-//----------------------------------------------------------------------------------------------------
-void CDVControl::WriteLongLong(uint8_t* dst,uint64_t val)
-{
- dst[0]=static_cast<uint8_t>(val>>56);
- dst[1]=static_cast<uint8_t>(val>>48);
- dst[2]=static_cast<uint8_t>(val>>40);
- dst[3]=static_cast<uint8_t>(val>>32);
- dst[4]=static_cast<uint8_t>(val>>24);
- dst[5]=static_cast<uint8_t>(val>>16);
- dst[6]=static_cast<uint8_t>(val>>8);
- dst[7]=static_cast<uint8_t>(val);
-}
-
 //----------------------------------------------------------------------------------------------------
 //установка 411 макроблока
 //----------------------------------------------------------------------------------------------------
@@ -281,7 +198,7 @@ void CDVControl::Encode(int16_t* img_y,int16_t* img_cr,int16_t* img_cb,bool is_p
  uint32_t dif;
  uint32_t offset;
 
- memset(target,0,144000);
+ memset(target,0,MAX_FRAME_SIZE);
 
  dif=0;
  offset=dif*DIF_BLOCK_SIZE;
@@ -494,181 +411,6 @@ void CDVControl::ExtractData(uint8_t* src,uint8_t* target)
  }
 }
 
-//----------------------------------------------------------------------------------------------------
-//проверка данных
-//----------------------------------------------------------------------------------------------------
-bool CDVControl::VerifyData(uint8_t* databuffer,uint64_t &next_addr,uint16_t &old_header_size,std::string &backup_title,bool &end_data,std::string &answer,bool &new_file)
-{
- end_data=false;
- new_file=false;
- answer="";
-
- uint64_t addr;
- uint32_t got;
- uint16_t header_size;
- int32_t flag_byte;
- uint32_t cksum=ReadLong(databuffer+19);
- uint32_t calc_cksum=CreateCRC(0L,NULL,0);
- 
- WriteLong(databuffer+19,0);
-
- if (databuffer[0]!='D' || databuffer[1]!='V' || databuffer[2]!='-' || databuffer[3]!='B') 
- {
-  answer+="Неверный идентификатор заголовка!\n";
-  return(false);
- }
-
- header_size=ReadShort(databuffer+4);
- if (databuffer[6]!=DVBACKUP_VERSION) 
- {
-  answer+="Неподдерживаемая версия программы!\n";
-  return(false);
- }
- if (header_size<HEADER_SIZE) 
- {
-  answer+="Неверный размер заголовка!\n";
-  return(false);
- }
-
- got=ReadLong(databuffer+15);
- flag_byte=got>>24;
- got&=0x00ffffff;
- addr=ReadLongLong(databuffer+7);
-
- if (next_addr==0)
- {
-  char *backup_title_str=new char[header_size-HEADER_SIZE+1]; 
-  memcpy(backup_title_str,databuffer+23,header_size-HEADER_SIZE);
-  backup_title_str[header_size-HEADER_SIZE]=0;
-  backup_title=backup_title_str;
-  delete[](backup_title_str);
-  old_header_size=header_size;
-  if (got==0) answer+="Найден префикс!\n";
-  else
-  {
-   answer+="Найден новый файл: ";
-   answer+=backup_title;
-   answer+="\n";
-   new_file=true;
-  }  
- }
- else 
- {
-  if (header_size!=old_header_size ||  memcmp(backup_title.c_str(),databuffer+23,header_size-HEADER_SIZE)!=0) 
-  {
-   answer+="Изменилось имя файла! Новое имя: ";
-   answer+=backup_title;
-   answer+="\n";
-
-   char *backup_title_str=new char[header_size-HEADER_SIZE+1]; 
-   memcpy(backup_title_str,databuffer+23,header_size-HEADER_SIZE);
-   backup_title_str[header_size-HEADER_SIZE]=0;
-   backup_title=backup_title_str;
-   delete[](backup_title_str);
-   old_header_size=header_size;
-   new_file=true;
-   next_addr=0;
-  }
-  char str[255];
-  sprintf(str,"%lld",addr);
-  answer+="Считан адрес:";
-  answer+=str;
-  answer+=" файла "+backup_title;
-  answer+="\n";
- }
-
- calc_cksum=CreateCRC(calc_cksum,databuffer,header_size+got);
- if (cksum!=calc_cksum)
- {
-  answer+="Ошибка контрольной суммы блока!\n";
-  next_addr=addr+got;
-  return(false);
- }
-
- if (addr!=next_addr) 
- {
-  char str[255];
-  answer+="Сбой адресов блоков! Принято:";
-  sprintf(str,"%lld",addr);
-  answer+=str;
-  sprintf(str,"%lld",next_addr);
-  answer+=" Нужен:";
-  answer+=str;
-  answer+="\n";
-  return(false);
- }
-
- next_addr=addr+got;
-
- if (flag_byte&0x01) 
- {
-  answer+="Файл ";
-  answer+=backup_title;
-  answer+=" считан весь.\n";
-  next_addr=0;
-  end_data=true;
- }
- return(true);
-}
-//----------------------------------------------------------------------------------------------------
-//запись извлечённых данных
-//----------------------------------------------------------------------------------------------------
-void CDVControl::WriteExtractedData(uint8_t* databuffer,bool do_recover,IExtractDataStream *iExtractDataStream_Ptr,uint16_t &last_header_size,uint32_t &last_got)
-{
- uint16_t header_size=ReadShort(databuffer+4);
- uint32_t got=ReadLong(databuffer+15)&0x00ffffff;
-
- if (do_recover==true)
- {
-  if (last_header_size!=0 && last_got!=0)
-  {
-   header_size=last_header_size;
-   got=last_got;
-  }
- }
- iExtractDataStream_Ptr->Write(databuffer+header_size,got);
-
- last_header_size=header_size;
- last_got=got;
-}
-//----------------------------------------------------------------------------------------------------
-//проверка конца данных
-//----------------------------------------------------------------------------------------------------
-bool CDVControl::VerifyEOF(uint64_t next_addr)
-{
- if (next_addr!=0) return(false);
- return(true);
-}
-
-//----------------------------------------------------------------------------------------------------
-//получить размер заголовка
-//----------------------------------------------------------------------------------------------------
-long CDVControl::GetHeaderSize(const char* backup_title)
-{
- if (!backup_title) return HEADER_SIZE;
- return(HEADER_SIZE+strlen(backup_title)); 
-}
-//----------------------------------------------------------------------------------------------------
-//создать заголовок
-//----------------------------------------------------------------------------------------------------
-void CDVControl::BuildHeader(uint8_t* databuffer,uint64_t current_address,uint32_t got,uint32_t header_size,int32_t eof,const char* backup_title)
-{
- uint32_t cksum=CreateCRC(0L,NULL,0);
-
- databuffer[0]='D';
- databuffer[1]='V';
- databuffer[2]='-';
- databuffer[3]='B';
-
- WriteShort(databuffer+4,header_size);
- databuffer[6]=DVBACKUP_VERSION;
- WriteLongLong(databuffer+7,current_address);
- WriteLong(databuffer+15,got|(eof?0x01000000:0));
- WriteLong(databuffer+19,0);
- if (backup_title) memcpy(databuffer+23,backup_title,strlen(backup_title));
- WriteLong(databuffer+19,CreateCRC(cksum,databuffer,header_size+got));
-}
-
 
 //====================================================================================================
 //открытые функции класса
@@ -714,17 +456,19 @@ bool CDVControl::CreateDV(IOutputDVStream *iOutputDVStream_Ptr,const std::string
 { 
  iOutputDVStream_Ptr->AddAnswer("Добавляю файл:"+title_file_name+"\n");
 
- uint8_t framebuffer[144000];
- uint8_t databuffer[144000];
+ CBackUp cBackUp;
+
+ uint8_t framebuffer[MAX_FRAME_SIZE];
+ uint8_t databuffer[MAX_FRAME_SIZE];
  uint32_t chunk_size=GetChunkSize(is_pal);
- uint32_t header_size=GetHeaderSize(title_file_name.c_str());
+ uint32_t header_size=cBackUp.GetHeaderSize(title_file_name.c_str());
 
  uint32_t height=DV_PAL_HEIGHT;
- uint32_t frame_size=144000;
+ uint32_t frame_size=PAL_FRAME_SIZE;
  if (is_pal==false)
  {
   height=DV_NTSC_HEIGHT;
-  frame_size=120000;
+  frame_size=NTSC_FRAME_SIZE;
  }
  CRAIIFileIn cRAIIFileIn(file_name.c_str(),std::ios_base::in|std::ios_base::binary);
 
@@ -733,6 +477,7 @@ bool CDVControl::CreateDV(IOutputDVStream *iOutputDVStream_Ptr,const std::string
  //узнаем размер входного файла
  cRAIIFileIn.GetHandle().seekg(0,std::ios_base::end);
  uint64_t file_size=cRAIIFileIn.GetHandle().tellg();
+ uint64_t remainder_size=file_size;
  cRAIIFileIn.GetHandle().seekg(0,std::ios_base::beg);
 
  //сохраняем данные
@@ -764,7 +509,7 @@ bool CDVControl::CreateDV(IOutputDVStream *iOutputDVStream_Ptr,const std::string
  uint64_t current_address=0;
  while (true)
  {
-  if (iOutputDVStream_Ptr->IsExit()==true)
+  if (iOutputDVStream_Ptr->IsBreak()==true)
   {
    iOutputDVStream_Ptr->AddAnswer("Отменено пользователем!\n");
    return(false);
@@ -791,7 +536,7 @@ bool CDVControl::CreateDV(IOutputDVStream *iOutputDVStream_Ptr,const std::string
 
   if (prefix>0)//формируем префиксный блок, если он нужен (это почти как пилот-тон у спектрума)
   {
-   BuildHeader(databuffer,0,0,header_size,0,title_file_name.c_str());
+   cBackUp.CreateHeader(databuffer,0,0,header_size,false,title_file_name.c_str());
    AddInfoBlocks(is_pal,framebuffer,cDVTime_Video,cDVTime_Current,false,FrameCounter);
    InsertData(databuffer,is_pal,framebuffer);   
    iOutputDVStream_Ptr->AddFrame(framebuffer,frame_size);
@@ -805,8 +550,10 @@ bool CDVControl::CreateDV(IOutputDVStream *iOutputDVStream_Ptr,const std::string
    got=cRAIIFileIn.GetHandle().gcount();//узнаём, сколько байт было считано
    if (got==0) break;//конец файла
   }	  
-  int32_t eof=(got<data_in_frame);
-  BuildHeader(databuffer,current_address,got,header_size,eof,title_file_name.c_str());
+  bool eof=false;
+  remainder_size-=got;
+  if (got<data_in_frame || remainder_size==0) eof=true;
+  cBackUp.CreateHeader(databuffer,current_address,got,header_size,eof,title_file_name.c_str());
   AddInfoBlocks(is_pal,framebuffer,cDVTime_Video,cDVTime_Current,false,FrameCounter);
   InsertData(databuffer,is_pal,framebuffer);
   iOutputDVStream_Ptr->AddFrame(framebuffer,frame_size);  
@@ -814,99 +561,52 @@ bool CDVControl::CreateDV(IOutputDVStream *iOutputDVStream_Ptr,const std::string
  }
  return(true);
 }
+
 //----------------------------------------------------------------------------------------------------
 //вынуть файлы из DV-файла
 //----------------------------------------------------------------------------------------------------
-bool CDVControl::ExtractDV(const std::string &dv_file_name,const  std::string &path,IExtractDataStream *iExtractDataStream_Ptr)
+bool CDVControl::ExtractDV(const std::string &dv_file_name,const std::string &path,IExtractDataStream *iExtractDataStream_Ptr)
 {
- uint8_t framebuffer[144000];
- uint8_t databuffer[144000];
+ uint8_t framebuffer[MAX_FRAME_SIZE];
+ uint8_t databuffer[MAX_FRAME_SIZE];
 
  CRAIIFileIn cRAIIFileIn(dv_file_name.c_str(),std::ios_base::in|std::ios_base::binary); 
-
- uint64_t next_addr=0;
- std::string answer;
- uint64_t counter=0;
- bool is_processing=false;
- bool done=false;
- while(done==false)
+ if (cRAIIFileIn.IsOpened()==false)
  {
-  if (iExtractDataStream_Ptr->IsExit()==true) break;
-  uint16_t last_header_size=0;
-  uint32_t last_got=0;
-  uint16_t old_header_size=0;
-  std::string backup_title;  
-  bool recover=false;
-  while (true) 
+  iExtractDataStream_Ptr->AddAnswer("Не могу открыть dv-файл:"+dv_file_name+"\n");
+  return(false);
+ }
+ CDVHeader cDVHeader;
+ CBackUp cBackUp;
+ cBackUp.ResetState();
+ while(true)
+ {
+  if (iExtractDataStream_Ptr->IsBreak()==true) break;
+  //читаем dv-файл и вынимаем данные
+  if (cRAIIFileIn.GetHandle().read(reinterpret_cast<char*>(framebuffer),sizeof(uint8_t)*NTSC_FRAME_SIZE).fail()==true)
   {
-   if (iExtractDataStream_Ptr->IsExit()==true)
+   iExtractDataStream_Ptr->AddAnswer("Файл dv считан весь.\n");
+   break;
+  }
+  CDVHeader::SHeader *sHeader_Ptr=reinterpret_cast<CDVHeader::SHeader*>(framebuffer);
+  bool is_pal;
+  if (cDVHeader.IsPAL(sHeader_Ptr,is_pal)==false)
+  {
+   iExtractDataStream_Ptr->AddAnswer("Ошибочная секция header файла dv!\n");
+   break;
+  }
+  if (is_pal==true)//требуется дочитать кадр
+  {
+   if (cRAIIFileIn.GetHandle().read(reinterpret_cast<char*>(framebuffer+NTSC_FRAME_SIZE),sizeof(uint8_t)*(PAL_FRAME_SIZE-NTSC_FRAME_SIZE)).fail()==true)
    {
-	iExtractDataStream_Ptr->AddAnswer("Отменено пользователем!\n");
+    iExtractDataStream_Ptr->AddAnswer("Файл dv считан весь.\n");
     break;
    }
-   uint32_t got=0;
-   if (cRAIIFileIn.GetHandle().read(reinterpret_cast<char*>(framebuffer),sizeof(uint8_t)*120000).fail()==true)
-   {
-    got=cRAIIFileIn.GetHandle().gcount();//узнаём, сколько байт было считано
-    if (got==0)
-	{
-     done=true;
- 	 break;
-	}
-   }  
-   if ((framebuffer[3]&0x80)!=0)//режим PAL, нужно прочесть остаток данных
-   {
-    if (cRAIIFileIn.GetHandle().read(reinterpret_cast<char*>(framebuffer+120000),sizeof(uint8_t)*(144000-120000)).fail()==true)
-    {
-     if (cRAIIFileIn.GetHandle().gcount()==0)
-	 {
-      done=true;
-	  break;
-	 }
-    }
-    got+=cRAIIFileIn.GetHandle().gcount();
-   }
-   if (got>0)
-   {   
-    ExtractData(framebuffer,databuffer);//вынимаем данные из кадра
-	counter++;
-
-    bool end_data;   
-    bool new_file;
-    bool res=VerifyData(databuffer,next_addr,old_header_size,backup_title,end_data,answer,new_file);
-    if (new_file==true)
-    {
-	 //iExtractDataStream_Ptr->AddAnswer("Новый файл:"+backup_title+"\n");
-     is_processing=true;
-	 recover=false;
-     iExtractDataStream_Ptr->Close();
-	 iExtractDataStream_Ptr->Create(path+"\\"+backup_title);
-    }
-	if (is_processing==true)//если файл уже пишется и произошла ошибка, то включаем режим восстановления
-	{
-	 if (res==false && recover==false)
-	 {
-	  iExtractDataStream_Ptr->AddAnswer("Файл:"+backup_title+"Ошибка в данных! Включён режим сохранения всех данных в файл!\n");
-	  recover=true;
-	 }
-     if (res==true || recover==true) 
-     {
-      WriteExtractedData(databuffer,recover,iExtractDataStream_Ptr,last_header_size,last_got);
-     }
-	}
-    if (answer.length()>0 && res==false && is_processing==true)//если есть ответ при негативном результате
-    {
-     iExtractDataStream_Ptr->AddAnswer(answer);
-    }
-    if (end_data==true) break;
-   }
   }
-  if (VerifyEOF(next_addr)==false && is_processing==true)
-  {   
-   iExtractDataStream_Ptr->AddAnswer("Файл считан не весь!\n");
-  }
-  //else iExtractDataStream_Ptr->AddAnswer("Считано.\n");
-  is_processing=false;
+  //вынимаем данные из кадра
+  ExtractData(framebuffer,databuffer);  
+  //отправляем на обработку
+  cBackUp.Extract(databuffer,path,iExtractDataStream_Ptr);
  }
  return(true);
 }
@@ -942,17 +642,16 @@ void CDVControl::OutputToFile(FILE *file,uint8_t *frame_buffer,bool is_pal)
   fprintf(file,"DIF sequence:%i\r\n",ds);
   fprintf(file,"------------------------------\r\n");
   CDVHeader::SHeader *sHeader_Ptr=reinterpret_cast<CDVHeader::SHeader*>(target);
-  //cDVHeader.OutputToFile(file,"\t",sHeader_Ptr);
+  cDVHeader.OutputToFile(file,"\t",sHeader_Ptr);
   target+=1*80;
   fprintf(file,"\r\n");
   CDVSubCode::SSubCode *sSubCode_Ptr=reinterpret_cast<CDVSubCode::SSubCode*>(target);
-  //cDVSubCode.OutputToFile(file,"\t",is_pal,sSubCode_Ptr);
+  cDVSubCode.OutputToFile(file,"\t",is_pal,sSubCode_Ptr);
   target+=2*80;
   fprintf(file,"\r\n");
   CDVVAUX::SVAUX *sVAUX_Ptr=reinterpret_cast<CDVVAUX::SVAUX*>(target);
-  //cDVVAUX.OutputToFile(file,"\t",sVAUX_Ptr);
-  target+=3*80;
-  //CreateVideoHeaders(target,frame,ds);
+  cDVVAUX.OutputToFile(file,"\t",sVAUX_Ptr);
+  target+=3*80;  
   uint8_t *ptr=target;
   CDVAudio cDVAudio;
   for(uint8_t m=0;m<9;m++,ptr+=16*DIF_BLOCK_SIZE) 

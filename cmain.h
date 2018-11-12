@@ -24,8 +24,8 @@ class CMain
   enum MODE
   {
    MODE_WAIT,//режим ожидания
-   MODE_INSERT_TO_DV,//режим сборки файлов в dv-видеофайл
-   MODE_EXTRACT_DV//режим извлечения файлов из dv-файла
+   MODE_INSERT_TO_DV,//запустить режим сборки файлов в dv-видеофайл
+   MODE_EXTRACT_DV//запустить режим извлечения файлов из dv-файла
   };
  public:
   struct SMode
@@ -46,6 +46,7 @@ class CMain
   struct SProtected
   {
    SMode sMode;//режим работы
+   bool IsProcessing;//производится ли обработка
    CCriticalSection cCriticalSection;//критическая секция для доступа к элементам
   } sProtected;
  public:
@@ -59,6 +60,11 @@ class CMain
   void InsertData(CDVTime &cDVTime,const std::string &path,const std::string &output_file_name,const std::string &programm_file_name,const std::string &logo_file_name,uint32_t prefix);//собрать данные в dv-файл
   void ExtractData(const std::string &path,const std::string &input_file_name);//извлечь данные из dv-файла  
   void GetMode(SMode &sMode);//получить режим работы
+  void ClearMode(void);//очистить режим работы (установить режим ожидания)
+  void GetAndClearMode(SMode &sMode);//получить режим работы и очистить его
+  void SetProcessingState(bool state);//задать, производится ли обработка
+  bool IsProcessing(void);//получить, производится ли обработка
+  void Break(void);//прервать обработку
  private:
   //-Закрытые функции класса----------------------------------------------------------------------------  
 };

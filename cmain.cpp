@@ -9,7 +9,7 @@
 CMain::CMain(void):cThreadMain_Ptr(new CThreadMain(this))
 { 
  sProtected.sMode.Mode=MODE_WAIT;
-
+ sProtected.IsProcessing=false;
  cThreadMain_Ptr->Start();
 }
 //====================================================================================================
@@ -33,7 +33,7 @@ CMain::~CMain()
 //----------------------------------------------------------------------------------------------------
 void CMain::OnTimer(std::string &answer)
 {
- cThreadMain_Ptr->GetAnswer(answer);
+ cThreadMain_Ptr->GetAndClearAnswer(answer);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -72,6 +72,53 @@ void CMain::GetMode(SMode &sMode)
  CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
  {
   sMode=sProtected.sMode;
+ } 
+}
+//----------------------------------------------------------------------------------------------------
+//очистить режим работы (установить режим ожидания)
+//----------------------------------------------------------------------------------------------------
+void CMain::ClearMode(void)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
   sProtected.sMode.Mode=MODE_WAIT;
  } 
+}
+//----------------------------------------------------------------------------------------------------
+//получить режим работы и очистить его
+//----------------------------------------------------------------------------------------------------
+void CMain::GetAndClearMode(SMode &sMode)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  sMode=sProtected.sMode;
+  sProtected.sMode.Mode=MODE_WAIT;
+ } 
+}
+//----------------------------------------------------------------------------------------------------
+//задать, производится ли обработка
+//----------------------------------------------------------------------------------------------------
+void CMain::SetProcessingState(bool state)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  sProtected.IsProcessing=state;
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//получить, производится ли обработка
+//----------------------------------------------------------------------------------------------------
+bool CMain::IsProcessing(void)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  return(sProtected.IsProcessing);
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//прервать обработку
+//----------------------------------------------------------------------------------------------------
+void CMain::Break(void)
+{
+ cThreadMain_Ptr->Break();
 }

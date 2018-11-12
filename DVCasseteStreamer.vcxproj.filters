@@ -29,6 +29,9 @@
     <ClInclude Include="tga.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cbackup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="cdatehmscode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -98,6 +101,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="tga.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cbackup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cdatehmscode.cpp">

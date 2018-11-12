@@ -17,7 +17,7 @@
 #include "coutputdvstreamfile.h"
 #include "cextractdatastreamfilewindows.h"
 
-class CMain;
+class CMain;//опережающее объявление класса CMain
 
 //====================================================================================================
 //класс главного потока
@@ -47,11 +47,13 @@ class CThreadMain
   void Stop(void);//остановить поток
   void Break(void);//остановить работу с DV-файлом
   void GetAnswer(std::string &answer);//получить ответ
+  void ClearAnswer(void);//очистить ответ
+  void GetAndClearAnswer(std::string &answer);//получить ответ и очистить его
  protected:
   //-Закрытые функции класса----------------------------------------------------------------------------  
   void Execute(void);//основной цикл класса
   bool IsExit(void);//получить, требуется ли выйти из потока
-  bool IsBreak(void);//требуется ли остановить работу с файлом dv
+  bool IsBreak(void);//получить, требуется ли остановить работу с файлом dv
   void InsertToDV(const std::string &path,const std::string &save_path,IOutputDVStream *iOutputDVStream_Ptr,CDVControl *cDVControl_Ptr,CDVTime &cDVTime,uint32_t &prefix,const std::string &output_file_name,const std::string &programm_file_name,const std::string &logo_file_name);//собрать файлы в DV-видеофайл
 };
 

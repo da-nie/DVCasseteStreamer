@@ -77,4 +77,12 @@ uint32_t CDVHeader::GetSectionSize(void)
 {
  return(sizeof(SHeader));
 }
-
+//----------------------------------------------------------------------------------------------------
+//узнать, является ли заголовок заголовком режима PAL
+//----------------------------------------------------------------------------------------------------
+bool CDVHeader::IsPAL(SHeader *sHeader_Ptr,bool &is_pal)
+{
+ is_pal=false;
+ if (sHeader_Ptr->sDIFHeaderData.DFS!=0) is_pal=true;
+ return(true);
+}

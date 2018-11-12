@@ -11,8 +11,8 @@ class CDialog_Main:public CDialog
 {
  protected:
   //-Переменные класса----------------------------------------------------------------------------------
-  static const uint32_t TIMER_PERIOD_MS=100;
-  static const uint32_t ID_TIMER_MAIN=1000;
+  static const uint32_t TIMER_PERIOD_MS=100;//период таймера
+  static const uint32_t ID_TIMER_MAIN=1000;//идентификатор таймера
 
   std::unique_ptr<CMain> cMain_Ptr;//указатель на основной класс программы
  public:
@@ -30,11 +30,12 @@ class CDialog_Main:public CDialog
   afx_msg void OnButton_Insert(void);//добавить файлы в dv-видеофайл
   afx_msg void OnButton_Extract(void);//извлечь файлы из dv-видеофайла
   afx_msg void OnButton_ClearLog(void);//очистить статистику
+  afx_msg void OnButton_Break(void);//прервать обработку
  public:
   //-Открытые функции класса----------------------------------------------------------------------------
  private:
   //-Закрытые функции класса----------------------------------------------------------------------------
-  afx_msg bool CDialog_Main::SelectDirectory(std::string &path,const std::string &caption);//выбор каталога
+  afx_msg bool SelectDirectory(std::string &path,const std::string &caption);//выбор каталога
   
 };
 
