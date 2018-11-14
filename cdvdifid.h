@@ -49,8 +49,8 @@ class CDVDIFID
   #pragma pack()
  private:
   //-Переменные-----------------------------------------------------------------------------------------
-  static const int32_t PAL_FRAME_RATE=25;
-  static const int32_t NTSC_FRAME_RATE=30;
+  static const int32_t PAL_FRAME_RATE=25;//частота кадров в режиме PAL
+  static const int32_t NTSC_FRAME_RATE=30;//частота кадров в режиме NTSC
 public:
   //-Конструктор класса---------------------------------------------------------------------------------
   CDVDIFID(void);

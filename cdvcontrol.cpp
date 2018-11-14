@@ -15,6 +15,7 @@
 //====================================================================================================
 //глобальные переменные
 //====================================================================================================
+
 static const int32_t DV_SuperMapVerical[5]={2,6,8,0,4};
 static const int32_t DV_SuperMapHorizontal[5]={2,1,3,0,4};
 static const int32_t DV_ParseBitStart[6]={4,18,32,46,60,70};
@@ -203,7 +204,7 @@ void CDVControl::Encode(int16_t* img_y,int16_t* img_cr,int16_t* img_cb,bool is_p
  dif=0;
  offset=dif*DIF_BLOCK_SIZE;
  if (is_pal==true) target[offset+3]|=0x80;
- numDIFseq=is_pal?12:10;
+ numDIFseq=is_pal?PAL_DIF_SEQUENCE:NTSC_DIF_SEQUENCE;
 
  for(ds=0;ds<numDIFseq;ds++) 
  { 
@@ -255,14 +256,14 @@ void CDVControl::ProcessVideoSegment(int16_t* img_y,int16_t* img_cr,int16_t* img
 void CDVControl::CreateInfoBlocks(uint8_t* target,int32_t frame,bool is_pal,CDVTime &cDVTime_Video,CDVTime &cDVTime_Current,bool enable_audio)
 { 
  uint8_t* frame_buf=target;
- uint8_t max_dif_seq=10;
+ uint8_t max_dif_seq=NTSC_DIF_SEQUENCE;
  uint8_t frame_rate=CDVTime::NTSC_FRAME_RATE;
  if (is_pal==true)
  {
-  max_dif_seq=12;
+  max_dif_seq=PAL_DIF_SEQUENCE;
   frame_rate=CDVTime::PAL_FRAME_RATE;
  }
- if (frame%frame_rate==0)
+ if (frame%frame_rate==0)//прошла секунда
  {
   cDVTime_Video.AddSecond();
   cDVTime_Current.AddSecond();
@@ -315,7 +316,7 @@ void CDVControl::EncodePicture(uint8_t* readbuf,bool is_pal,uint8_t* target,SDVV
  int16_t img_y[DV_PAL_HEIGHT*DV_WIDTH];
  int16_t img_cr[DV_PAL_HEIGHT*DV_WIDTH/2];
  int16_t img_cb[DV_PAL_HEIGHT*DV_WIDTH/2];
- ConvertToYUV(readbuf,is_pal?72:60,img_y,img_cr,img_cb);
+ ConvertToYUV(readbuf,is_pal?DV_PAL_HEIGHT:DV_NTSC_HEIGHT,img_y,img_cr,img_cb);
  Encode(img_y,img_cr,img_cb,is_pal,target,sDVVideoSegment);
 }
 //----------------------------------------------------------------------------------------------------
@@ -331,8 +332,8 @@ void CDVControl::AddInfoBlocks(bool is_pal,uint8_t* target,CDVTime &cDVTime_Vide
 //----------------------------------------------------------------------------------------------------
 int32_t CDVControl::GetChunkSize(bool is_pal)
 {
- uint32_t numbytes=9*((80-3-5)+(12*4+2*8)*15);
- return(numbytes*(is_pal?12:10));
+ uint32_t numbytes=9*((DIF_BLOCK_SIZE-3-5)+(12*4+2*8)*15);
+ return(numbytes*(is_pal?PAL_DIF_SEQUENCE:NTSC_DIF_SEQUENCE));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -343,7 +344,7 @@ void CDVControl::InsertData(uint8_t* src,bool is_pal,uint8_t* target)
  int32_t numDIFseq;
  int32_t ds,i,j,b;
 
- numDIFseq=is_pal?12:10;
+ numDIFseq=is_pal?PAL_DIF_SEQUENCE:NTSC_DIF_SEQUENCE;
 
  for(ds=0;ds<numDIFseq;ds++) 
  { 
@@ -379,9 +380,13 @@ void CDVControl::ExtractData(uint8_t* src,uint8_t* target)
 {
  int32_t numDIFseq;
  int32_t ds,i,j,b;
- int32_t IsPAL=src[3]&0x80;
+ bool is_pal;
 
- numDIFseq=IsPAL?12:10;
+ CDVHeader cDVHeader;
+ CDVHeader::SHeader *sHeader_Ptr=reinterpret_cast<CDVHeader::SHeader*>(src);
+ cDVHeader.IsPAL(sHeader_Ptr,is_pal);
+
+ numDIFseq=is_pal?PAL_DIF_SEQUENCE:NTSC_DIF_SEQUENCE;
 
  for(ds=0;ds<numDIFseq;ds++) 
  { 
@@ -530,6 +535,7 @@ bool CDVControl::CreateDV(IOutputDVStream *iOutputDVStream_Ptr,const std::string
   //выводим проценты
   double percent_size=0;
   if (file_size>0) percent_size=((DV_WIDTH-2)*current_address)/file_size;
+  if (file_size<=chunk_size) percent_size=DV_WIDTH-2;//для файлов, не более размера блока в кадре, указываем сразу 100%
   cGraphics.SolidFill(1,height-4,percent_size,3,PROGRESS_BAR_COLOR);
 
   EncodePicture(image,is_pal,framebuffer,sDVVideoSegment);

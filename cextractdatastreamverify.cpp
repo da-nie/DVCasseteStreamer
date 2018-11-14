@@ -1,23 +1,26 @@
 //====================================================================================================
 //подключаемые библиотеки
 //====================================================================================================
-#include "cmain.h"
+#include "cextractdatastreamverify.h"
+#include "stdafx.h"
+
+//====================================================================================================
+//глобальные переменные
+//====================================================================================================
 
 //====================================================================================================
 //конструктор класса
 //====================================================================================================
-CMain::CMain(void):cThreadMain_Ptr(new CThreadMain(this))
+CExtractDataStreamVerify::CExtractDataStreamVerify(void)
 { 
- sProtected.sMode.Mode=MODE_WAIT;
- sProtected.IsProcessing=false;
- cThreadMain_Ptr->Start();
+ SetBreak(false);
 }
 //====================================================================================================
 //деструктор класса
 //====================================================================================================
-CMain::~CMain()
+CExtractDataStreamVerify::~CExtractDataStreamVerify()
 {
- cThreadMain_Ptr->Stop();
+ Close();
 }
 
 //====================================================================================================
@@ -29,103 +32,83 @@ CMain::~CMain()
 //====================================================================================================
 
 //----------------------------------------------------------------------------------------------------
-//получить и очистить ответ
+//создать файл
 //----------------------------------------------------------------------------------------------------
-void CMain::GetAndClearAnswer(std::string &answer)
+bool CExtractDataStreamVerify::Create(const std::string &file_name)
 {
- cThreadMain_Ptr->GetAndClearAnswer(answer);
+ return(true);
 }
-
 //----------------------------------------------------------------------------------------------------
-//собрать данные в dv-файл
+//закрыть файл
 //----------------------------------------------------------------------------------------------------
-void CMain::InsertData(CDVTime &cDVTime,const CDialog_Insert::SInsertSettings &sInsertSettings)
+void CExtractDataStreamVerify::Close(void)
+{
+}
+//----------------------------------------------------------------------------------------------------
+//записать данные в файл
+//----------------------------------------------------------------------------------------------------
+bool CExtractDataStreamVerify::Write(uint8_t *buffer_ptr,size_t size)
+{
+ return(true);
+}
+//----------------------------------------------------------------------------------------------------
+//добавить к ответу строку
+//----------------------------------------------------------------------------------------------------
+void CExtractDataStreamVerify::AddAnswer(const std::string &answer)
 {
  CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
  {
-  sProtected.sMode.Mode=MODE_INSERT_TO_DV;
-  sProtected.sMode.cDVTime=cDVTime;
-  sProtected.sMode.sInsertSettings=sInsertSettings;
- } 
-}
-//----------------------------------------------------------------------------------------------------
-//извлечь данные из dv-файла  
-//----------------------------------------------------------------------------------------------------
-void CMain::ExtractData(const CDialog_Extract::SExtractSettings &sExtractSettings)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  sProtected.sMode.Mode=MODE_EXTRACT_DV;
-  sProtected.sMode.sExtractSettings=sExtractSettings;
- } 
-}
-//----------------------------------------------------------------------------------------------------
-//проверить данные в dv-файле
-//----------------------------------------------------------------------------------------------------
-void CMain::VerifyData(const CDialog_Extract::SExtractSettings &sExtractSettings)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  sProtected.sMode.Mode=MODE_VERIFY_DV;
-  sProtected.sMode.sExtractSettings=sExtractSettings;
- } 
-}
-
-//----------------------------------------------------------------------------------------------------
-//получить режим работы
-//----------------------------------------------------------------------------------------------------
-void CMain::GetMode(SMode &sMode)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  sMode=sProtected.sMode;
- } 
-}
-//----------------------------------------------------------------------------------------------------
-//очистить режим работы (установить режим ожидания)
-//----------------------------------------------------------------------------------------------------
-void CMain::ClearMode(void)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  sProtected.sMode.Mode=MODE_WAIT;
- } 
-}
-//----------------------------------------------------------------------------------------------------
-//получить режим работы и очистить его
-//----------------------------------------------------------------------------------------------------
-void CMain::GetAndClearMode(SMode &sMode)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  sMode=sProtected.sMode;
-  sProtected.sMode.Mode=MODE_WAIT;
- } 
-}
-//----------------------------------------------------------------------------------------------------
-//задать, производится ли обработка
-//----------------------------------------------------------------------------------------------------
-void CMain::SetProcessingState(bool state)
-{
- CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
- {
-  sProtected.IsProcessing=state;
+  sProtected.Answer+=answer;
  }
 }
 //----------------------------------------------------------------------------------------------------
-//получить, производится ли обработка
+//получить ответ
 //----------------------------------------------------------------------------------------------------
-bool CMain::IsProcessing(void)
+void CExtractDataStreamVerify::GetAnswer(std::string &answer)
 {
  CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
  {
-  return(sProtected.IsProcessing);
+  answer=sProtected.Answer;
  }
 }
 //----------------------------------------------------------------------------------------------------
-//прервать обработку
+//очистить ответ
 //----------------------------------------------------------------------------------------------------
-void CMain::Break(void)
+void CExtractDataStreamVerify::ClearAnswer(void)
 {
- cThreadMain_Ptr->Break();
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  sProtected.Answer="";
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//получить ответ и очистить его
+//----------------------------------------------------------------------------------------------------
+void CExtractDataStreamVerify::GetAndClearAnswer(std::string &answer)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  answer=sProtected.Answer;
+  sProtected.Answer="";
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//нужно ли завершать обработку
+//----------------------------------------------------------------------------------------------------
+bool CExtractDataStreamVerify::IsBreak(void)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  return(sProtected.Break);
+ }
+}
+//----------------------------------------------------------------------------------------------------
+//задать, требуется ли завершение обработки
+//----------------------------------------------------------------------------------------------------
+void CExtractDataStreamVerify::SetBreak(bool state)
+{
+ CRAIICCriticalSection cRAIICCriticalSection(&sProtected.cCriticalSection);
+ {
+  sProtected.Break=state;
+ }
 }

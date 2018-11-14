@@ -54,16 +54,20 @@ void CThreadMain::Execute(void)
   cMain_Ptr->GetAndClearMode(sMode);  
   if (sMode.Mode==CMain::MODE_INSERT_TO_DV)//сборка файлов в dv
   {
+   if (cDVControl.LoadBackgroundImage(sMode.sInsertSettings.LogoFileName,true)==false)
+   {
+    cOutputDVStreamFile.AddAnswer("Не могу загрузить файл логотипа!\n");
+    continue;	
+   }
    cMain_Ptr->SetProcessingState(true);
    char c_dir[MAX_PATH];
    GetCurrentDirectory(MAX_PATH,c_dir);
    cDVControl.NewRecord();
    cOutputDVStreamFile.SetBreak(false);
-   cDVControl.LoadBackgroundImage(sMode.LogoFileName,true);
-   cOutputDVStreamFile.Create(sMode.OutputFileName);
-   uint32_t prefix=sMode.Prefix;
-   SetCurrentDirectory(sMode.Path.c_str());
-   InsertToDV(sMode.Path,"",&cOutputDVStreamFile,&cDVControl,sMode.cDVTime,prefix,sMode.OutputFileName,"",sMode.LogoFileName);
+   cOutputDVStreamFile.Create(sMode.sInsertSettings.DVFileName);
+   uint32_t prefix=sMode.sInsertSettings.GlobalPrefix;
+   SetCurrentDirectory(sMode.sInsertSettings.Path.c_str());
+   InsertToDV(sMode.sInsertSettings.Path,"",&cOutputDVStreamFile,&cDVControl,sMode.cDVTime,sMode.sInsertSettings.LocalPrefix,prefix,sMode.sInsertSettings.DVFileName,sMode.sInsertSettings.LogoFileName);
    cOutputDVStreamFile.Close();   
    SetCurrentDirectory(c_dir);
    cOutputDVStreamFile.AddAnswer("Сборка dv-файла завершена.\n");
@@ -73,8 +77,16 @@ void CThreadMain::Execute(void)
   {
    cMain_Ptr->SetProcessingState(true);
    cExtractDataStreamFileWindows.SetBreak(false);
-   cDVControl.ExtractDV(sMode.InputFileName,sMode.Path,&cExtractDataStreamFileWindows); 
+   cDVControl.ExtractDV(sMode.sExtractSettings.DVFileName,sMode.sExtractSettings.Path,&cExtractDataStreamFileWindows); 
    cExtractDataStreamFileWindows.Close();
+   cMain_Ptr->SetProcessingState(false);
+  }
+  if (sMode.Mode==CMain::MODE_VERIFY_DV)//проверка файлов из dv
+  {
+   cMain_Ptr->SetProcessingState(true);
+   cExtractDataStreamVerify.SetBreak(false);
+   cDVControl.ExtractDV(sMode.sExtractSettings.DVFileName,sMode.sExtractSettings.Path,&cExtractDataStreamVerify); 
+   cExtractDataStreamVerify.Close();
    cMain_Ptr->SetProcessingState(false);
   }
   Sleep(100);
@@ -92,7 +104,7 @@ bool CThreadMain::IsExit(void)
 //----------------------------------------------------------------------------------------------------
 //собрать файлы в DV-видеофайл
 //----------------------------------------------------------------------------------------------------
-void CThreadMain::InsertToDV(const std::string &path,const std::string &save_path,IOutputDVStream *iOutputDVStream_Ptr,CDVControl *cDVControl_Ptr,CDVTime &cDVTime,uint32_t &prefix,const std::string &output_file_name,const std::string &programm_file_name,const std::string &logo_file_name)
+void CThreadMain::InsertToDV(const std::string &path,const std::string &save_path,IOutputDVStream *iOutputDVStream_Ptr,CDVControl *cDVControl_Ptr,CDVTime &cDVTime,uint32_t local_prefix,uint32_t &prefix,const std::string &output_file_name,const std::string &logo_file_name)
 {
  //сохраняем все файлы каталога
  WIN32_FIND_DATA wfd;
@@ -105,20 +117,18 @@ void CThreadMain::InsertToDV(const std::string &path,const std::string &save_pat
   if (wfd.cFileName[0]!='.' && !(wfd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY))//если это файл
   {
    std::string file_name=path;
-   file_name+="\\";
    file_name+=wfd.cFileName;
 
    std::string title_file_name=save_path;
    title_file_name+=wfd.cFileName;
 
    bool use=true;
-   if (title_file_name.compare(output_file_name)==0) use=false;//пропускаем имя выходного файла
-   if (title_file_name.compare(programm_file_name)==0) use=false;//пропускаем своё имя
-   if (title_file_name.compare(logo_file_name)==0) use=false;//пропускаем имя логотипа
+   if (file_name.compare(output_file_name)==0) use=false;//пропускаем имя выходного файла
+   if (file_name.compare(logo_file_name)==0) use=false;//пропускаем имя логотипа
    if (use==true)
-   {
+   {    
 	cDVControl_Ptr->CreateDV(iOutputDVStream_Ptr,file_name,title_file_name,true,prefix,cDVTime);
-    prefix=0;
+    prefix=local_prefix;
    }
   }
   if (FindNextFile(handle,&wfd)==FALSE) break;
@@ -134,16 +144,16 @@ void CThreadMain::InsertToDV(const std::string &path,const std::string &save_pat
 
   if (wfd.cFileName[0]!='.' && (wfd.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY))//если это директория
   {
-   std::string new_path=path;   
-   new_path+="\\";
+   std::string new_path=path;      
    new_path+=wfd.cFileName;   
+   new_path+="\\";
 
    std::string new_save_path=save_path;
    new_save_path+=wfd.cFileName;
    new_save_path+="\\";
 
    if (SetCurrentDirectory(new_path.c_str())==FALSE) break;
-   InsertToDV(new_path,new_save_path,iOutputDVStream_Ptr,cDVControl_Ptr,cDVTime,prefix,output_file_name,programm_file_name,logo_file_name);  
+   InsertToDV(new_path,new_save_path,iOutputDVStream_Ptr,cDVControl_Ptr,cDVTime,local_prefix,prefix,output_file_name,logo_file_name);  
    SetCurrentDirectory(path.c_str());
   }
   if (FindNextFile(handle,&wfd)==FALSE) break;
@@ -165,6 +175,7 @@ void CThreadMain::Start(void)
  cEvent_Exit.ResetEvent(); 
  cOutputDVStreamFile.SetBreak(false);
  cExtractDataStreamFileWindows.SetBreak(false);
+ cExtractDataStreamVerify.SetBreak(false);
  cWinThread_Thread=AfxBeginThread((AFX_THREADPROC)ThreadMain,this);
  cWinThread_Thread->m_bAutoDelete=FALSE;
 }
@@ -189,6 +200,7 @@ void CThreadMain::Break(void)
 { 
  cOutputDVStreamFile.SetBreak(true);
  cExtractDataStreamFileWindows.SetBreak(true);
+ cExtractDataStreamVerify.SetBreak(true);
 }
 //----------------------------------------------------------------------------------------------------
 //получить ответ
@@ -215,5 +227,7 @@ void CThreadMain::GetAndClearAnswer(std::string &answer)
  cOutputDVStreamFile.GetAndClearAnswer(answer);
  if (answer.length()>0) return;
  cExtractDataStreamFileWindows.GetAndClearAnswer(answer); 
+ if (answer.length()>0) return;
+ cExtractDataStreamVerify.GetAndClearAnswer(answer); 
 }
 

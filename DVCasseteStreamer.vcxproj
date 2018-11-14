@@ -10,6 +10,80 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cbackup.h" />
+    <ClInclude Include="cdatehmscode.h" />
+    <ClInclude Include="cdateymdcode.h" />
+    <ClInclude Include="cdialog_extract.h" />
+    <ClInclude Include="cdialog_insert.h" />
+    <ClInclude Include="cdocument_main.h" />
+    <ClInclude Include="cdvaudio.h" />
+    <ClInclude Include="cdvcontrol.h" />
+    <ClInclude Include="cdvdifid.h" />
+    <ClInclude Include="cdvheader.h" />
+    <ClInclude Include="cdvsubcode.h" />
+    <ClInclude Include="cdvtime.h" />
+    <ClInclude Include="cdvvaux.h" />
+    <ClInclude Include="cdvvideo.h" />
+    <ClInclude Include="cextractdatastreamfilewindows.h" />
+    <ClInclude Include="cextractdatastreamverify.h" />
+    <ClInclude Include="cframewnd_main.h" />
+    <ClInclude Include="cgraphics.h" />
+    <ClInclude Include="clistview_main.h" />
+    <ClInclude Include="cmain.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="coutputdvstreamfile.h" />
+    <ClInclude Include="craiiccriticalsection.h" />
+    <ClInclude Include="craiifilein.h" />
+    <ClInclude Include="craiifileout.h" />
+    <ClInclude Include="cthreadmain.h" />
+    <ClInclude Include="ctimecode.h" />
+    <ClInclude Include="iextractdatastream.h" />
+    <ClInclude Include="ioutputdvstream.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="tga.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cbackup.cpp" />
+    <ClCompile Include="cdatehmscode.cpp" />
+    <ClCompile Include="cdateymdcode.cpp" />
+    <ClCompile Include="cdialog_extract.cpp" />
+    <ClCompile Include="cdialog_insert.cpp" />
+    <ClCompile Include="cdocument_main.cpp" />
+    <ClCompile Include="cdvaudio.cpp" />
+    <ClCompile Include="cdvcontrol.cpp" />
+    <ClCompile Include="cdvdifid.cpp" />
+    <ClCompile Include="cdvheader.cpp" />
+    <ClCompile Include="cdvsubcode.cpp" />
+    <ClCompile Include="cdvtime.cpp" />
+    <ClCompile Include="cdvvaux.cpp" />
+    <ClCompile Include="cdvvideo.cpp" />
+    <ClCompile Include="cextractdatastreamfilewindows.cpp" />
+    <ClCompile Include="cextractdatastreamverify.cpp" />
+    <ClCompile Include="cframewnd_main.cpp" />
+    <ClCompile Include="cgraphics.cpp" />
+    <ClCompile Include="clistview_main.cpp" />
+    <ClCompile Include="cmain.cpp" />
+    <ClCompile Include="common.cpp" />
+    <ClCompile Include="coutputdvstreamfile.cpp" />
+    <ClCompile Include="craiifilein.cpp" />
+    <ClCompile Include="craiifileout.cpp" />
+    <ClCompile Include="cthreadmain.cpp" />
+    <ClCompile Include="ctimecode.cpp" />
+    <ClCompile Include="iextractdatastream.cpp" />
+    <ClCompile Include="ioutputdvstream.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="tga.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Bitmap\icon.ico" />
+    <None Include="bitmap\icon1.ico" />
+    <None Include="Bitmap\toolbar_main.bmp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{98A6360F-EA22-41C0-BE0E-ECE9F157A901}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -19,7 +93,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -74,63 +149,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ResourceCompile Include="resource.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="cbackup.h" />
-    <ClInclude Include="cdatehmscode.h" />
-    <ClInclude Include="cdateymdcode.h" />
-    <ClInclude Include="cdialog_main.h" />
-    <ClInclude Include="cdvaudio.h" />
-    <ClInclude Include="cdvcontrol.h" />
-    <ClInclude Include="cdvdifid.h" />
-    <ClInclude Include="cdvheader.h" />
-    <ClInclude Include="cdvsubcode.h" />
-    <ClInclude Include="cdvtime.h" />
-    <ClInclude Include="cdvvaux.h" />
-    <ClInclude Include="cdvvideo.h" />
-    <ClInclude Include="cextractdatastreamfilewindows.h" />
-    <ClInclude Include="cgraphics.h" />
-    <ClInclude Include="cmain.h" />
-    <ClInclude Include="coutputdvstreamfile.h" />
-    <ClInclude Include="craiiccriticalsection.h" />
-    <ClInclude Include="craiifilein.h" />
-    <ClInclude Include="craiifileout.h" />
-    <ClInclude Include="cthreadmain.h" />
-    <ClInclude Include="ctimecode.h" />
-    <ClInclude Include="iextractdatastream.h" />
-    <ClInclude Include="ioutputdvstream.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="tga.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="cbackup.cpp" />
-    <ClCompile Include="cdatehmscode.cpp" />
-    <ClCompile Include="cdateymdcode.cpp" />
-    <ClCompile Include="cdialog_main.cpp" />
-    <ClCompile Include="cdvaudio.cpp" />
-    <ClCompile Include="cdvcontrol.cpp" />
-    <ClCompile Include="cdvdifid.cpp" />
-    <ClCompile Include="cdvheader.cpp" />
-    <ClCompile Include="cdvsubcode.cpp" />
-    <ClCompile Include="cdvtime.cpp" />
-    <ClCompile Include="cdvvaux.cpp" />
-    <ClCompile Include="cdvvideo.cpp" />
-    <ClCompile Include="cextractdatastreamfilewindows.cpp" />
-    <ClCompile Include="cgraphics.cpp" />
-    <ClCompile Include="cmain.cpp" />
-    <ClCompile Include="coutputdvstreamfile.cpp" />
-    <ClCompile Include="craiifilein.cpp" />
-    <ClCompile Include="craiifileout.cpp" />
-    <ClCompile Include="cthreadmain.cpp" />
-    <ClCompile Include="ctimecode.cpp" />
-    <ClCompile Include="iextractdatastream.cpp" />
-    <ClCompile Include="ioutputdvstream.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="tga.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

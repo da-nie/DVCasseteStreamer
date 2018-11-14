@@ -1,7 +1,9 @@
 #include "stdafx.h"
-#include "cdialog_main.h"
-
 //------------------------------------------------------------------------------
+#include "cdocument_main.h"
+#include "clistview_main.h"
+#include "cframewnd_main.h"
+
 //------------------------------------------------------------------------------
 class CWinApp_Main:public CWinApp
 {
@@ -23,19 +25,46 @@ class CWinApp_Main:public CWinApp
 //-Конструктор класса--------------------------------------------------------
 CWinApp_Main::CWinApp_Main(void)
 {
- CoInitialize(NULL);
 }
 //-Деструктор класса---------------------------------------------------------
 CWinApp_Main::~CWinApp_Main()
 {
- CoUninitialize();
 }
 //-Функции класса------------------------------------------------------------
 BOOL CWinApp_Main::InitInstance(void)
 { 
  CWinApp::InitInstance();
- CDialog_Main cDialog_Main((LPSTR)IDD_DIALOG_MAIN,NULL);
- cDialog_Main.DoModal();
+
+ char FileName[MAX_PATH];
+ GetModuleFileName(NULL,FileName,MAX_PATH);
+ //отматываем до черты
+ long size=strlen(FileName);
+ if (size>0) size--;
+ while(size>0)
+ {
+  unsigned char s=FileName[size];
+  if (s==0 || s=='\\')
+  {
+   FileName[size+1]=0;
+   break;
+  }
+  size--;
+ }
+ SetCurrentDirectory(FileName);
+ CSingleDocTemplate* pDocTemplate;//новый шаблон 
+ pDocTemplate=new CSingleDocTemplate(NULL,RUNTIME_CLASS(CDocument_Main),RUNTIME_CLASS(CFrameWnd_Main),RUNTIME_CLASS(CListView_Main));
+ if (pDocTemplate==NULL)
+ {
+  MessageBox(NULL,"Не могу создать шаблон!","Ошибка",MB_OK);
+  return(false);
+ }
+ AddDocTemplate(pDocTemplate);//добавить шаблон 
+ CCommandLineInfo cmdInfo;//класс команд 
+ ParseCommandLine(cmdInfo);//разбор командной строки 
+ if (!ProcessShellCommand(cmdInfo)) return(FALSE);//запуск команд на выполнение 
+ m_pMainWnd->SetWindowText("DV Cassete Streamer v1.0");
+ m_pMainWnd->ShowWindow(SW_SHOW);//показать окно 
+ m_pMainWnd->UpdateWindow();//запустить цикл обработки сообщений 
  return(TRUE);
 }
 int CWinApp_Main::ExitInstance(void)

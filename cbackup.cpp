@@ -158,8 +158,8 @@ void CBackUp::Extract(uint8_t databuffer[MAX_FRAME_SIZE],const std::string &path
   {
    //начинаем новый файл
    iExtractDataStream_Ptr->Close();
-   iExtractDataStream_Ptr->Create(path+"\\"+file_name);
-   iExtractDataStream_Ptr->AddAnswer("Новый файл:"+file_name+"\n");
+   iExtractDataStream_Ptr->Create(path+file_name);
+   //iExtractDataStream_Ptr->AddAnswer("Новый файл:"+file_name+"\n");
    CurrentFileName=file_name;
    FileInProcessing=true;
    CurrentHeaderSize=sDVPackerHeader_Ptr->HeaderSize;
@@ -181,8 +181,8 @@ void CBackUp::Extract(uint8_t databuffer[MAX_FRAME_SIZE],const std::string &path
     iExtractDataStream_Ptr->AddAnswer(CurrentFileName+" - файл считан не весь!\n");
     //начинаем новый файл
     iExtractDataStream_Ptr->Close();
-    iExtractDataStream_Ptr->Create(path+"\\"+file_name);
-    iExtractDataStream_Ptr->AddAnswer("Новый файл:"+file_name+"\n");
+    iExtractDataStream_Ptr->Create(path+file_name);
+    //iExtractDataStream_Ptr->AddAnswer("Новый файл:"+file_name+"\n");
 	CurrentFileName=file_name;
     FileInProcessing=true;
     CurrentHeaderSize=sDVPackerHeader_Ptr->HeaderSize;

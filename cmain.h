@@ -13,6 +13,8 @@
 
 #include "cthreadmain.h"
 #include "craiiccriticalsection.h"
+#include "cdialog_insert.h"
+#include "cdialog_extract.h"
 
 //====================================================================================================
 //основной класс программы
@@ -25,19 +27,16 @@ class CMain
   {
    MODE_WAIT,//режим ожидания
    MODE_INSERT_TO_DV,//запустить режим сборки файлов в dv-видеофайл
-   MODE_EXTRACT_DV//запустить режим извлечения файлов из dv-файла
+   MODE_EXTRACT_DV,//запустить режим извлечения файлов из dv-файла
+   MODE_VERIFY_DV//запустить режим проверки файлов в dv-файле
   };
  public:
   struct SMode
   {
    MODE Mode;//режим работы
-   std::string Path;//каталог, в котором находятся добавляемые файлы
-   std::string OutputFileName;//имя выходного dv-файла
-   std::string InputFileName;//имя входного dv-файла 
-   std::string LogoFileName;//имя файла логотипа
-   std::string ProgrammFileName;//имя файла программы
    CDVTime cDVTime;//время создания файла
-   uint32_t Prefix;//величина префикса
+   CDialog_Insert::SInsertSettings sInsertSettings;//настройки сборки файлов
+   CDialog_Extract::SExtractSettings sExtractSettings;//настройки извлечения файлов
   };
  private:
   //-Переменные класса----------------------------------------------------------------------------------
@@ -56,9 +55,10 @@ class CMain
   ~CMain();
  public:
   //-Открытые функции класса----------------------------------------------------------------------------
-  void OnTimer(std::string &answer);//событие таймера
-  void InsertData(CDVTime &cDVTime,const std::string &path,const std::string &output_file_name,const std::string &programm_file_name,const std::string &logo_file_name,uint32_t prefix);//собрать данные в dv-файл
-  void ExtractData(const std::string &path,const std::string &input_file_name);//извлечь данные из dv-файла  
+  void GetAndClearAnswer(std::string &answer);//получить и очистить ответ
+  void InsertData(CDVTime &cDVTime,const CDialog_Insert::SInsertSettings &sInsertSettings);//собрать данные в dv-файл
+  void ExtractData(const CDialog_Extract::SExtractSettings &sExtractSettings);//извлечь данные из dv-файла
+  void VerifyData(const CDialog_Extract::SExtractSettings &sExtractSettings);//проверить данные в dv-файле
   void GetMode(SMode &sMode);//получить режим работы
   void ClearMode(void);//очистить режим работы (установить режим ожидания)
   void GetAndClearMode(SMode &sMode);//получить режим работы и очистить его

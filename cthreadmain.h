@@ -16,6 +16,7 @@
 #include "cdvcontrol.h"
 #include "coutputdvstreamfile.h"
 #include "cextractdatastreamfilewindows.h"
+#include "cextractdatastreamverify.h"
 
 class CMain;//опережающее объявление класса CMain
 
@@ -35,6 +36,7 @@ class CThreadMain
 
   COutputDVStreamFile cOutputDVStreamFile;//класс создания dv-файла
   CExtractDataStreamFileWindows cExtractDataStreamFileWindows;//класс экспорта данных из dv-файла
+  CExtractDataStreamVerify cExtractDataStreamVerify;//класс проверки данных в dv-файле
   CDVControl cDVControl;//класс работы с dv-форматом
  public:  
   //-Конструктор класса---------------------------------------------------------------------------------
@@ -54,7 +56,7 @@ class CThreadMain
   void Execute(void);//основной цикл класса
   bool IsExit(void);//получить, требуется ли выйти из потока
   bool IsBreak(void);//получить, требуется ли остановить работу с файлом dv
-  void InsertToDV(const std::string &path,const std::string &save_path,IOutputDVStream *iOutputDVStream_Ptr,CDVControl *cDVControl_Ptr,CDVTime &cDVTime,uint32_t &prefix,const std::string &output_file_name,const std::string &programm_file_name,const std::string &logo_file_name);//собрать файлы в DV-видеофайл
+  void InsertToDV(const std::string &path,const std::string &save_path,IOutputDVStream *iOutputDVStream_Ptr,CDVControl *cDVControl_Ptr,CDVTime &cDVTime,uint32_t local_prefix,uint32_t &prefix,const std::string &output_file_name,const std::string &logo_file_name);//собрать файлы в DV-видеофайл
 };
 
 #endif

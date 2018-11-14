@@ -15,15 +15,28 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="resource.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cdocument_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cframewnd_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="clistview_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ctimecode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="iextractdatastream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ioutputdvstream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tga.h">
@@ -36,9 +49,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cdateymdcode.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cdialog_main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="cdvaudio.h">
@@ -89,17 +99,41 @@
     <ClInclude Include="cthreadmain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ctimecode.h">
+    <ClInclude Include="cdialog_insert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="iextractdatastream.h">
+    <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ioutputdvstream.h">
+    <ClInclude Include="cdialog_extract.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cextractdatastreamverify.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cdocument_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cframewnd_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clistview_main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ctimecode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="iextractdatastream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ioutputdvstream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="tga.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -110,9 +144,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cdateymdcode.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cdialog_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cdvaudio.cpp">
@@ -160,17 +191,33 @@
     <ClCompile Include="cthreadmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ctimecode.cpp">
+    <ClCompile Include="cdialog_insert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="iextractdatastream.cpp">
+    <ClCompile Include="common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ioutputdvstream.cpp">
+    <ClCompile Include="cdialog_extract.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="cextractdatastreamverify.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resource.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Bitmap\toolbar_main.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Bitmap\icon.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bitmap\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

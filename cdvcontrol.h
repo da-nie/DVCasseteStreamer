@@ -64,6 +64,9 @@ class CDVControl
   static const uint32_t NTSC_FRAME_SIZE=120000;//размер кадра NTSC
   static const uint32_t MAX_FRAME_SIZE=PAL_FRAME_SIZE;//максимальный размер кадра
 
+  static const uint32_t PAL_DIF_SEQUENCE=12;//количество DIF-блоков в режиме PAL
+  static const uint32_t NTSC_DIF_SEQUENCE=10;//количество DIF-блоков в режиме NTSC
+
   int32_t FrameCounter;//текущий кадр
   CDVTime cDVTime_Video;//длительность видео
 public:

@@ -1,8 +1,8 @@
-#ifndef C_EXTRACT_DATA_STREAM_FILE_WINDOWS_H
-#define C_EXTRACT_DATA_STREAM_FILE_WINDOWS_H
+#ifndef C_EXTRACT_DATA_STREAM_VERIFY_H
+#define C_EXTRACT_DATA_STREAM_VERIFY_H
 
 //====================================================================================================
-//класс работы с файлами
+//класс работы с проверкой файлов
 //====================================================================================================
 
 //====================================================================================================
@@ -10,19 +10,16 @@
 //====================================================================================================
 #include <stdint.h>
 #include <string>
-#include "craiifilein.h"
-#include "craiifileout.h"
 #include "iextractdatastream.h"
 #include "craiiccriticalsection.h"
 
 //====================================================================================================
-//класс работы с файлами
+//класс работы с проверкой файлов
 //====================================================================================================
-class CExtractDataStreamFileWindows:public IExtractDataStream
+class CExtractDataStreamVerify:public IExtractDataStream
 {
  private:
   //-Переменные класса----------------------------------------------------------------------------------
-  CRAIIFileOut cRAIIFileOut;
   //защищённые переменные
   struct SProtected
   {
@@ -32,9 +29,9 @@ class CExtractDataStreamFileWindows:public IExtractDataStream
   } sProtected;  
 public:
   //-Конструктор класса---------------------------------------------------------------------------------
-  CExtractDataStreamFileWindows(void);
+  CExtractDataStreamVerify(void);
   //-Деструктор класса----------------------------------------------------------------------------------
-  ~CExtractDataStreamFileWindows();
+  ~CExtractDataStreamVerify();
  public:
   //-Открытые функции класса----------------------------------------------------------------------------
   bool Create(const std::string &file_name);//создать файл
